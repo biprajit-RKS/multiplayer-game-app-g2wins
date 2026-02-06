@@ -16,7 +16,7 @@ const io = new Server(httpServer, {
     origin: [
       "http://localhost:5501",
       "http://127.0.0.1:5501",
-      "https://ludolife-server.onrender.com"
+      "https://multiplayer-app.game2wins.com"
       // future production domain yahan add kar sakte ho
     ],
     methods: ["GET", "POST"],
