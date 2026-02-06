@@ -1,0 +1,103 @@
+/* 1. Add below html code at the end of the body element of dev.html*/
+/*
+<!--CHATBOX-->
+<div id="chatContainer">
+    <div id="chatHeader">
+        <span>Chat Box</span>
+        <span id="btClose">
+            &#10006;
+        </span>
+    </div>
+    <ul id="chatContent">
+    </ul>
+    <div id="chatFooter">
+        <input type="text" placeholder="Enter your message here" id="inputMessage" />
+        <button id="btSend">Send</button>
+    </div>
+</div>
+*/
+
+/* 2. Add below css code at the end of main.css */
+/*CHATBOX*/
+#chatContainer {
+    position: absolute;
+    width: 20vw;
+    height: 25vw;
+    min-width: 240px;
+    min-height: 250px;
+    z-index: 3000;
+    background-color: white;
+    padding: 0;
+    margin: 0;
+    font-family: 'text', sans-serif;
+    font-size:calc(10px + 0.5vw);
+    display: none;
+}
+
+#chatContainer * {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+}
+
+#chatHeader {
+    width: 100%;
+    height: 1.4em;
+    /*    border-radius: 6px 6px 0 0;*/
+    background-color: #93278f;
+    color: #FFF;
+    font-family: 'title', sans-serif;
+    font-size: 1.2em;
+    position: relative;
+    padding: 0.1em 0.1em 0.1em 0.3em;
+}
+
+#btClose {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: inline-block;
+/*    border: 1px solid red;*/
+    padding: 0 0.4em;
+}
+
+#chatContent {
+    font-size: 1em;
+    overflow-y: auto;
+    max-height: 77%;
+}
+
+#chatContent li {
+    margin: 0.3em;
+}
+
+#chatContent li.mainPlayer{
+    color: #93278f;
+}
+
+#chatFooter {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    border-top: 1px solid #93278f;
+    padding: 0.16em;
+    font-size: 1em;
+}
+
+#inputMessage {
+    width: 75%;
+    float: left;
+    padding: 0.3em 0.1em;
+    font-size: 1em;
+}
+
+#btSend {
+    width: 24%;
+    float: right;
+    padding: 0.3em 0.1em;
+    font-size: 1em;
+    background-color: #93278f;
+    color: #FFF;
+    border-color: #93278f;
+}
