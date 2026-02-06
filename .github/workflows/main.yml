@@ -17,6 +17,9 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 2294
           script: |
+            # 1. Setup Volta Environment (Fixes "command not found")
+            export VOLTA_HOME="$HOME/.volta"
+            export PATH="$VOLTA_HOME/bin:$PATH"
             # 1. Navigate to directory
             cd /root/multiplayer-backend/multiplayer-game-app-g2wins || exit
 
@@ -30,7 +33,7 @@ jobs:
 
             # 3. Fetch and Reset (Priority: Remote)
             git fetch --all
-            git reset --hard origin/deployment 
+            git reset --hard origin/deployment
 
             # 4. Install dependencies
             npm install
