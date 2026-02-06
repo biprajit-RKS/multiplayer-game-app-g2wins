@@ -16,12 +16,12 @@ const io = new Server(httpServer, {
     origin: [
       "http://localhost:5501",
       "http://127.0.0.1:5501",
-      "https://multiplayer-app.game2wins.com"
+      "https://multiplayer-app.game2wins.com",
       // future production domain yahan add kar sakte ho
     ],
     methods: ["GET", "POST"],
-    credentials: true
-  }
+    credentials: true,
+  },
 });
 
 // ================= GAME SERVER LOGIC =================
@@ -57,7 +57,7 @@ io.on("connection", (socket) => {
 // ================= START SERVER =================
 // Render requires process.env.PORT
 // Local fallback = 1000
-const PORT = process.env.PORT || 1000;
+const PORT = process.env.PORT || 9560;
 
 httpServer.listen(PORT, () => {
   console.log("Server running on port", PORT);
