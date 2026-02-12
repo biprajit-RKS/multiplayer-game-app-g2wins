@@ -17,36 +17,40 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 2294
           script: |
-            # 1. Setup Volta Environment
+            # 1. Setup Volta Environment (Fixes "command not found")
             export VOLTA_HOME="$HOME/.volta"
             export PATH="$VOLTA_HOME/bin:$PATH"
-            
+
             # 2. Navigate to directory
             cd /root/multiplayer-backend/multiplayer-game-app-g2wins || exit
 
-            # 3. Ensure Remote is set to SSH
+            # 3. Ensure Remote is set to SSH (Fixes Private Repo access)
             CURRENT_URL=$(git remote get-url origin)
             if [[ $CURRENT_URL == https* ]]; then
               echo "Switching remote from HTTPS to SSH..."
               git remote set-url origin git@github.com:OrbitDSL/multiplayer-game-app-g2wins.git
             fi
 
-            # 4. Correct Branch Handling
-            echo "Fetching latest changes..."
-            git fetch origin deployment
-            
-            # Check if we are already on 'deployment', if not, switch to it
+            # 4. Robust Branch Synchronization
+            echo "Refreshing remote tracking..."
+            git remote set-branches origin '*'
+            git fetch --all --prune
+
+            # Check if we are on 'deployment'. If not, switch or create.
             CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
             if [ "$CURRENT_BRANCH" != "deployment" ]; then
-              echo "Currently on $CURRENT_BRANCH. Switching to deployment branch..."
-              git checkout -B deployment origin/deployment
+              echo "Currently on $CURRENT_BRANCH. Switching to deployment..."
+              # Try checking out existing, otherwise create from remote
+              git checkout deployment || git checkout -b deployment origin/deployment
             fi
 
-            # 5. Force Reset to match Remote exactly
+            # 5. Force align with Remote
+            echo "Hard resetting to origin/deployment..."
             git reset --hard origin/deployment
-            git clean -fd  # Optional: removes untracked files for a clean state
+            git clean -fd
 
             # 6. Install dependencies
+            echo "Installing dependencies..."
             npm install
 
             # 7. PM2 Logic: Restart or Create
@@ -57,6 +61,11 @@ jobs:
               echo "App does not exist, creating new instance..."
               pm2 start npm --name "multiplayer-app" -- start
             fi
+
+            # 8. Final Confirmation
+            echo "✅ Deployment Successful!"
+            echo "Deployed Commit:"
+            git log -1 --oneline
             
             # 8. Final Echo
             echo "Deployment complete."
