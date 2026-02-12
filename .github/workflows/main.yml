@@ -17,55 +17,45 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 2294
           script: |
-            # 1. Setup Volta Environment (Fixes "command not found")
-            export VOLTA_HOME="$HOME/.volta"
-            export PATH="$VOLTA_HOME/bin:$PATH"
+              set -e  # Stop if any command fails
 
-            # 2. Navigate to directory
-            cd /root/multiplayer-backend/multiplayer-game-app-g2wins || exit
-
-            # 3. Ensure Remote is set to SSH (Fixes Private Repo access)
-            CURRENT_URL=$(git remote get-url origin)
-            if [[ $CURRENT_URL == https* ]]; then
-              echo "Switching remote from HTTPS to SSH..."
-              git remote set-url origin git@github.com:OrbitDSL/multiplayer-game-app-g2wins.git
-            fi
-
-            # 4. Robust Branch Synchronization
-            echo "Refreshing remote tracking..."
-            git remote set-branches origin '*'
-            git fetch --all --prune
-
-            # Check if we are on 'deployment'. If not, switch or create.
-            CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-            if [ "$CURRENT_BRANCH" != "deployment" ]; then
-              echo "Currently on $CURRENT_BRANCH. Switching to deployment..."
-              # Try checking out existing, otherwise create from remote
-              git checkout deployment || git checkout -b deployment origin/deployment
-            fi
-
-            # 5. Force align with Remote
-            echo "Hard resetting to origin/deployment..."
-            git reset --hard origin/deployment
-            git clean -fd
-
-            # 6. Install dependencies
-            echo "Installing dependencies..."
-            npm install
-
-            # 7. PM2 Logic: Restart or Create
-            if pm2 info "multiplayer-app" > /dev/null 2>&1; then
-              echo "App exists, restarting..."
-              pm2 restart "multiplayer-app"
-            else
-              echo "App does not exist, creating new instance..."
-              pm2 start npm --name "multiplayer-app" -- start
-            fi
-
-            # 8. Final Confirmation
-            echo "✅ Deployment Successful!"
-            echo "Deployed Commit:"
-            git log -1 --oneline
+              echo "===== Starting Clean Deployment ====="
             
-            # 8. Final Echo
-            echo "Deployment complete."
+              APP_NAME="multiplayer-app"
+              BASE_DIR="/root/multiplayer-backend"
+              PROJECT_DIR="multiplayer-game-app-g2wins"
+              REPO_URL="https://github.com/OrbitDSL/multiplayer-game-app-g2wins.git"
+              BRANCH="deployment"
+            
+              # 1️⃣ Navigate to base directory
+              cd $BASE_DIR
+            
+              # 2️⃣ Stop and Delete PM2 App (if exists)
+              if pm2 list | grep -q "$APP_NAME"; then
+                echo "Stopping and deleting existing PM2 app..."
+                pm2 delete "$APP_NAME"
+              else
+                echo "No existing PM2 app found."
+              fi
+            
+              # 3️⃣ Remove Existing Project Folder (if exists)
+              if [ -d "$PROJECT_DIR" ]; then
+                echo "Removing old project directory..."
+                rm -rf "$PROJECT_DIR"
+              fi
+            
+              # 4️⃣ Fresh Clone from Public Repo
+              echo "Cloning fresh repository..."
+              git clone -b "$BRANCH" "$REPO_URL"
+            
+              # 5️⃣ Move into project
+              cd "$PROJECT_DIR"
+            
+              # 6️⃣ Install Dependencies
+              echo "Installing dependencies..."
+              npm install
+            
+              # 7️⃣ Start Application with PM2
+              echo "Starting application with PM2..."
+              pm2 start npm --name "$APP_NAME" -- start
+              echo "===== Deployment Completed Successfully ====="
