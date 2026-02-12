@@ -17,45 +17,19 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 2294
           script: |
-              set -e  # Stop if any command fails
-
-              echo "===== Starting Clean Deployment ====="
-            
-              APP_NAME="multiplayer-app"
-              BASE_DIR="/root/multiplayer-backend"
-              PROJECT_DIR="multiplayer-game-app-g2wins"
-              REPO_URL="https://github.com/OrbitDSL/multiplayer-game-app-g2wins.git"
-              BRANCH="deployment"
-            
-              # 1️⃣ Navigate to base directory
-              cd $BASE_DIR
-            
-              # 2️⃣ Stop and Delete PM2 App (if exists)
-              if pm2 list | grep -q "$APP_NAME"; then
-                echo "Stopping and deleting existing PM2 app..."
-                pm2 delete "$APP_NAME"
-              else
-                echo "No existing PM2 app found."
-              fi
-            
-              # 3️⃣ Remove Existing Project Folder (if exists)
-              if [ -d "$PROJECT_DIR" ]; then
-                echo "Removing old project directory..."
-                rm -rf "$PROJECT_DIR"
-              fi
-            
-              # 4️⃣ Fresh Clone from Public Repo
-              echo "Cloning fresh repository..."
-              git clone -b "$BRANCH" "$REPO_URL"
-            
-              # 5️⃣ Move into project
-              cd "$PROJECT_DIR"
-            
-              # 6️⃣ Install Dependencies
-              echo "Installing dependencies..."
+              # 1️⃣ Go to project directory
+              cd /root/multiplayer-backend/multiplayer-game-app-g2wins || exit 1
+              
+              # 2️⃣ Ensure we are on deployment branch
+              git checkout deployment
+              
+              # 3️⃣ Pull latest changes
+              git pull origin deployment
+              
+              # 4️⃣ Install dependencies
               npm install
-            
-              # 7️⃣ Start Application with PM2
-              echo "Starting application with PM2..."
-              pm2 start npm --name "$APP_NAME" -- start
-              echo "===== Deployment Completed Successfully ====="
+              
+              # 5️⃣ Restart PM2
+              pm2 restart multiplayer-app
+              
+              echo "===== Deployment Completed ====="
