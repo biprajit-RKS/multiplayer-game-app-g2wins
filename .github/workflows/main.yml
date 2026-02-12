@@ -17,28 +17,39 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 2294
           script: |
-            # 1. Setup Volta Environment (Fixes "command not found")
+            # 1. Setup Volta Environment
             export VOLTA_HOME="$HOME/.volta"
             export PATH="$VOLTA_HOME/bin:$PATH"
-            # 1. Navigate to directory
+            
+            # 2. Navigate to directory
             cd /root/multiplayer-backend/multiplayer-game-app-g2wins || exit
 
-            # 2. Ensure Remote is set to SSH (Crucial for Private Repos)
-            # This allows the 'git fetch' to use your SSH Key automatically.
+            # 3. Ensure Remote is set to SSH
             CURRENT_URL=$(git remote get-url origin)
             if [[ $CURRENT_URL == https* ]]; then
               echo "Switching remote from HTTPS to SSH..."
               git remote set-url origin git@github.com:OrbitDSL/multiplayer-game-app-g2wins.git
             fi
 
-            # 3. Fetch and Reset (Priority: Remote)
-            git fetch --all
-            git reset --hard origin/deployment
+            # 4. Correct Branch Handling
+            echo "Fetching latest changes..."
+            git fetch origin deployment
+            
+            # Check if we are already on 'deployment', if not, switch to it
+            CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+            if [ "$CURRENT_BRANCH" != "deployment" ]; then
+              echo "Currently on $CURRENT_BRANCH. Switching to deployment branch..."
+              git checkout -B deployment origin/deployment
+            fi
 
-            # 4. Install dependencies
+            # 5. Force Reset to match Remote exactly
+            git reset --hard origin/deployment
+            git clean -fd  # Optional: removes untracked files for a clean state
+
+            # 6. Install dependencies
             npm install
 
-            # 5. PM2 Logic: Restart or Create
+            # 7. PM2 Logic: Restart or Create
             if pm2 info "multiplayer-app" > /dev/null 2>&1; then
               echo "App exists, restarting..."
               pm2 restart "multiplayer-app"
@@ -46,3 +57,6 @@ jobs:
               echo "App does not exist, creating new instance..."
               pm2 start npm --name "multiplayer-app" -- start
             fi
+            
+            # 8. Final Echo
+            echo "Deployment complete."
