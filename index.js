@@ -17,6 +17,9 @@ const io = new Server(httpServer, {
       "http://localhost:5501",
       "http://127.0.0.1:5501",
       "https://multiplayer-app.game2wins.com",
+      "https://stage.game2wins.com",
+      "https://game2wins.co",
+      "https://gamedev1997.github.io"
       // future production domain yahan add kar sakte ho
     ],
     methods: ["GET", "POST"],
