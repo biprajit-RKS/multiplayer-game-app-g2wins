@@ -17,32 +17,19 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 2294
           script: |
-            # 1. Setup Volta Environment (Fixes "command not found")
-            export VOLTA_HOME="$HOME/.volta"
-            export PATH="$VOLTA_HOME/bin:$PATH"
-            # 1. Navigate to directory
-            cd /root/multiplayer-backend/multiplayer-game-app-g2wins || exit
-
-            # 2. Ensure Remote is set to SSH (Crucial for Private Repos)
-            # This allows the 'git fetch' to use your SSH Key automatically.
-            CURRENT_URL=$(git remote get-url origin)
-            if [[ $CURRENT_URL == https* ]]; then
-              echo "Switching remote from HTTPS to SSH..."
-              git remote set-url origin git@github.com:OrbitDSL/multiplayer-game-app-g2wins.git
-            fi
-
-            # 3. Fetch and Reset (Priority: Remote)
-            git fetch --all
-            git reset --hard origin/deployment
-
-            # 4. Install dependencies
-            npm install
-
-            # 5. PM2 Logic: Restart or Create
-            if pm2 info "multiplayer-app" > /dev/null 2>&1; then
-              echo "App exists, restarting..."
-              pm2 restart "multiplayer-app"
-            else
-              echo "App does not exist, creating new instance..."
-              pm2 start npm --name "multiplayer-app" -- start
-            fi
+              # 1️⃣ Go to project directory
+              cd /root/multiplayer-backend/multiplayer-game-app-g2wins || exit 1
+              
+              # 2️⃣ Ensure we are on deployment branch
+              git checkout deployment
+              
+              # 3️⃣ Pull latest changes
+              git pull origin deployment
+              
+              # 4️⃣ Install dependencies
+              npm install
+              
+              # 5️⃣ Restart PM2
+              pm2 restart multiplayer-app
+              
+              echo "===== Deployment Completed ====="
